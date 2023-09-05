@@ -1,5 +1,6 @@
 import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:tasker/screens/tasks/index.dart';
 import 'package:tasker/widgets/drawer_tile.dart';
 
 class DrawerWidget extends StatelessWidget {
@@ -9,14 +10,30 @@ class DrawerWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Drawer(
       child: ListView(
-        children: const [
+        children: [
           DrawerTileWidget(
             icon: BootstrapIcons.list_task,
             title: "Tasks",
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const TaskIndexScreen(),
+                ),
+              );
+            },
           ),
           DrawerTileWidget(
             icon: BootstrapIcons.people,
             title: "Users",
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const TaskIndexScreen(),
+                ),
+              );
+            },
           )
         ],
       ),

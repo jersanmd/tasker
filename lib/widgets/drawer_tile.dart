@@ -4,15 +4,19 @@ import 'package:tasker/constants/app.dart';
 class DrawerTileWidget extends StatelessWidget {
   final IconData icon;
   final String title;
+  final VoidCallback? onTap;
+
   const DrawerTileWidget({
     super.key,
     required this.icon,
     required this.title,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      onTap: onTap,
       leading: Icon(
         icon,
         color: AppConstants.primaryTextColor,
