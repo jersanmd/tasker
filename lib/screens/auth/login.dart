@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_signin_button/button_list.dart';
 import 'package:flutter_signin_button/button_view.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:tasker/constants/app.dart';
+import 'package:tasker/screens/auth/home_screen.dart';
 import 'package:tasker/widgets/elevated_button.dart';
 import 'package:tasker/widgets/text_field.dart';
 
@@ -35,8 +37,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    SvgPicture.asset(
+                      'assets/images/undraw_task_re_wi3v.svg',
+                      height: MediaQuery.of(context).size.height / 5,
+                      width: 150,
+                    ),
                     const Text(
-                      'TAS\nKER',
+                      'TASKER',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         height: 1,
@@ -79,7 +86,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         bool isValid =
                             _formKey.currentState?.validate() ?? false;
                         if (isValid) {
-                          print("Successfully logged in!");
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const HomeScreen()));
                         } else {}
                       },
                     ),

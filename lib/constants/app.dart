@@ -15,5 +15,7 @@ class AppConstants {
   static const Color textFieldColor = Color.fromARGB(255, 224, 224, 224);
 
   static const double buttonTextSize = 20;
-  static const double taskerTitleTextSize = 80;
+  static const double taskerTitleTextSize = 60;
+
+  static const Color splashColor = Color.fromARGB(255, 118, 133, 177);
 }
