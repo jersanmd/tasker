@@ -56,6 +56,12 @@
       "languageVersion": "2.12"
     },
     {
+      "name": "flare_flutter",
+      "rootUri": "file:///C:/Users/1stje/AppData/Local/Pub/Cache/hosted/pub.dev/flare_flutter-3.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "flutter",
       "rootUri": "file:///C:/Users/1stje/OneDrive/Documents/Personal%20Files/Dev/flutter/packages/flutter",
       "packageUri": "lib/",
@@ -84,6 +90,12 @@
       "rootUri": "file:///C:/Users/1stje/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_signin_button-2.0.0",
       "packageUri": "lib/",
       "languageVersion": "2.12"
+    },
+    {
+      "name": "flutter_slidable",
+      "rootUri": "file:///C:/Users/1stje/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_slidable-3.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
     },
     {
       "name": "flutter_svg",
@@ -176,6 +188,12 @@
       "languageVersion": "2.18"
     },
     {
+      "name": "status_alert",
+      "rootUri": "file:///C:/Users/1stje/AppData/Local/Pub/Cache/hosted/pub.dev/status_alert-1.0.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "stream_channel",
       "rootUri": "file:///C:/Users/1stje/AppData/Local/Pub/Cache/hosted/pub.dev/stream_channel-2.1.1",
       "packageUri": "lib/",
@@ -242,7 +260,7 @@
       "languageVersion": "3.1"
     }
   ],
-  "generated": "2023-09-05T01:57:14.369016Z",
+  "generated": "2023-09-05T06:23:56.461782Z",
   "generator": "pub",
   "generatorVersion": "3.1.0"
 }
