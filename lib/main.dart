@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:tasker/screens/auth/login.dart';
 
-void main() {
+void main() async {
+  await Hive.initFlutter();
+  await Hive.openBox('tasker_database');
+
   runApp(const MyApp());
 }
 

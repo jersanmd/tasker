@@ -1,9 +1,9 @@
 import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:status_alert/status_alert.dart';
 import 'package:tasker/constants/app.dart';
 import 'package:tasker/widgets/app_bar.dart';
@@ -27,16 +27,51 @@ class _TaskIndexScreenState extends State<TaskIndexScreen> {
   bool isEdit = false;
   int editIndex = 0;
 
-  List<Map<String, dynamic>> _tasks = [
-    {
-      'name': 'Mangluto',
-      'description': 'Lami na manok.',
-    },
-    {
-      'name': 'Manilhig',
-      'description': 'Tanggal ug abog.',
-    },
-  ];
+  List<Map<String, dynamic>> _tasks = [];
+  final Box<dynamic> _taskerBox = Hive.box("tasker_database");
+
+  void _refreshTasks() {
+    final task = _taskerBox.keys.map((key) {
+      final task = _taskerBox.get(key);
+
+      return {
+        'key': key,
+        'name': task['name'],
+        'description': task['description']
+      };
+    }).toList();
+
+    setState(() {
+      _tasks = task.reversed.toList();
+    });
+  }
+
+  Future<void> _storeTask(Map<String, dynamic> task) async {
+    await _taskerBox.add(task);
+    _refreshTasks();
+
+    _taskNameEditingController.text = "";
+    _taskDescriptionEditingController.text = "";
+  }
+
+  Future<void> _updateTask(int key, Map<String, dynamic> task) async {
+    await _taskerBox.put(key, task);
+    _refreshTasks();
+
+    _taskNameEditingController.text = "";
+    _taskDescriptionEditingController.text = "";
+  }
+
+  Future<void> _deleteTask(int key) async {
+    await _taskerBox.delete(key);
+    _refreshTasks();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshTasks();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +119,16 @@ class _TaskIndexScreenState extends State<TaskIndexScreen> {
                             icon: BootstrapIcons.trash_fill,
                             foregroundColor: AppConstants.primaryColor,
                             onPressed: (context) {
-                              _deleteTask(index);
+                              _deleteTask(_tasks[index]['key']);
+                              StatusAlert.show(
+                                context,
+                                duration: const Duration(seconds: 1),
+                                title: 'Task',
+                                subtitle: 'Task deleted.',
+                                configuration: const IconConfiguration(
+                                    icon: BootstrapIcons.trash_fill),
+                                maxWidth: 260,
+                              );
                             },
                           )
                         ],
@@ -103,47 +147,12 @@ class _TaskIndexScreenState extends State<TaskIndexScreen> {
     );
   }
 
-  void _deleteTask(index) {
-    setState(() {
-      _tasks.removeAt(index);
-      StatusAlert.show(
-        context,
-        duration: const Duration(seconds: 2),
-        title: 'Task',
-        subtitle: 'Task deleted.',
-        configuration: const IconConfiguration(icon: BootstrapIcons.trash_fill),
-        maxWidth: 260,
-      );
-    });
-  }
-
-  void _editTask(index, name, description) {
-    setState(() {
-      _tasks[index] = {'name': name, 'description': description};
-      StatusAlert.show(
-        context,
-        duration: const Duration(seconds: 2),
-        title: 'Task',
-        subtitle: 'Task updated.',
-        configuration:
-            const IconConfiguration(icon: BootstrapIcons.pencil_fill),
-        maxWidth: 260,
-      );
-    });
-
-    isEdit = false;
-    _taskNameEditingController.text = "";
-    _taskDescriptionEditingController.text = "";
-  }
-
   void _createTask(BuildContext context) {
-    // _taskNameEditingController.clear();
-    // _taskDescriptionEditingController.clear();
     showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: const Text('Create task'),
+            title: Text(isEdit ? "Edit Task" : 'Create task'),
             content: SingleChildScrollView(
               child: FormBuilder(
                 key: _formKey,
@@ -178,10 +187,11 @@ class _TaskIndexScreenState extends State<TaskIndexScreen> {
                     ),
                     const SizedBox(height: AppConstants.textFieldPadding),
                     ElevatedButtonWidget(
-                      label: "Create",
+                      label: isEdit ? "Update" : "Create",
                       buttonColor: AppConstants.primaryColor,
                       buttonTextColor: AppConstants.backgroundColor,
-                      icon: BootstrapIcons.plus,
+                      icon:
+                          isEdit ? BootstrapIcons.pencil : BootstrapIcons.plus,
                       onPressed: () {
                         bool isValid =
                             _formKey.currentState?.validate() ?? false;
@@ -189,36 +199,42 @@ class _TaskIndexScreenState extends State<TaskIndexScreen> {
                         if (isValid) {
                           setState(() {
                             if (isEdit) {
-                              _editTask(
-                                  editIndex,
-                                  _taskNameEditingController.text,
-                                  _taskDescriptionEditingController.text);
-                            } else {
-                              _tasks.add({
+                              _updateTask(_tasks[editIndex]['key'], {
                                 'name': _taskNameEditingController.text.trim(),
                                 'description': _taskDescriptionEditingController
                                     .text
                                     .trim()
                               });
+                              StatusAlert.show(
+                                context,
+                                duration: const Duration(seconds: 1),
+                                title: 'Task',
+                                subtitle: 'Task updated.',
+                                configuration: const IconConfiguration(
+                                    icon: BootstrapIcons.pencil),
+                                maxWidth: 260,
+                              );
+                              isEdit = false;
+                            } else {
+                              _storeTask({
+                                'name': _taskNameEditingController.text.trim(),
+                                'description': _taskDescriptionEditingController
+                                    .text
+                                    .trim()
+                              });
+                              StatusAlert.show(
+                                context,
+                                duration: const Duration(seconds: 1),
+                                title: 'Task',
+                                subtitle: 'New task created.',
+                                configuration: const IconConfiguration(
+                                    icon: BootstrapIcons.check),
+                                maxWidth: 260,
+                              );
                             }
                           });
 
                           Navigator.pop(context);
-
-                          StatusAlert.show(
-                            context,
-                            duration: Duration(seconds: 2),
-                            title: 'Task',
-                            subtitle: 'Task created.',
-                            configuration: IconConfiguration(icon: Icons.done),
-                            maxWidth: 260,
-                          );
-
-                          // ScaffoldMessenger.of(context).showSnackBar(
-                          //   const SnackBar(
-                          //     content: Text('Successfully created new task.'),
-                          //   ),
-                          // );
                         }
                       },
                     ),

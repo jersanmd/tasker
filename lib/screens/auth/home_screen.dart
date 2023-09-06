@@ -14,9 +14,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        drawer: DrawerWidget(),
+        drawer: const DrawerWidget(),
         appBar: AppBarWidget(appBar: AppBar(), title: 'Home'),
-        body: SafeArea(
+        body: const SafeArea(
           child: Scrollbar(
               child: SingleChildScrollView(
             child: Padding(
