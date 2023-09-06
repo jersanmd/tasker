@@ -14,18 +14,19 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        drawer: const DrawerWidget(),
-        appBar: AppBarWidget(appBar: AppBar(), title: 'Home'),
-        body: const SafeArea(
-          child: Scrollbar(
-              child: SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.all(AppConstants.screenPadding),
-              child: Column(
-                children: [],
-              ),
+      drawer: const DrawerWidget(),
+      appBar: AppBarWidget(appBar: AppBar(), title: 'Home'),
+      body: const SafeArea(
+        child: Scrollbar(
+            child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.all(AppConstants.screenPadding),
+            child: Column(
+              children: [],
             ),
-          )),
-        ));
+          ),
+        )),
+      ),
+    );
   }
 }

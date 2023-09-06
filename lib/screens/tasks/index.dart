@@ -87,6 +87,9 @@ class _TaskIndexScreenState extends State<TaskIndexScreen> {
           color: AppConstants.backgroundColor,
         ),
         onPressed: () {
+          isEdit = false;
+          _taskNameEditingController.text = "";
+          _taskDescriptionEditingController.text = "";
           _createTask(context);
         },
       ),
@@ -214,7 +217,6 @@ class _TaskIndexScreenState extends State<TaskIndexScreen> {
                                     icon: BootstrapIcons.pencil),
                                 maxWidth: 260,
                               );
-                              isEdit = false;
                             } else {
                               _storeTask({
                                 'name': _taskNameEditingController.text.trim(),
