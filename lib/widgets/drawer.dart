@@ -1,6 +1,8 @@
 import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:tasker/screens/auth/login.dart';
 import 'package:tasker/screens/tasks/index.dart';
+import 'package:tasker/screens/users/index.dart';
 import 'package:tasker/widgets/drawer_tile.dart';
 
 class DrawerWidget extends StatelessWidget {
@@ -30,8 +32,19 @@ class DrawerWidget extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const TaskIndexScreen(),
+                  builder: (context) => const UserIndexScreen(),
                 ),
+              );
+            },
+          ),
+          DrawerTileWidget(
+            icon: BootstrapIcons.power,
+            title: "Logout",
+            onTap: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+                (route) => false,
               );
             },
           )

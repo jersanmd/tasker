@@ -6,6 +6,14 @@ void main() async {
   await Hive.initFlutter();
   await Hive.openBox('tasker_database');
 
+  await Hive.openBox('user_database');
+
+  final userBox = Hive.box('user_database');
+
+  if (userBox.isEmpty) {
+    userBox.add({'username': 'admin', 'password': 'admin'});
+  }
+
   runApp(const MyApp());
 }
 
