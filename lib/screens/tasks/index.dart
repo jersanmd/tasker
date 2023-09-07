@@ -166,7 +166,7 @@ class _TaskIndexScreenState extends State<TaskIndexScreen> {
           isEdit = false;
           _taskNameEditingController.text = "";
           _taskDescriptionEditingController.text = "";
-          _createTask(context);
+          _createEditTask(context);
         },
       ),
       body: SafeArea(
@@ -190,7 +190,7 @@ class _TaskIndexScreenState extends State<TaskIndexScreen> {
                                     _tasks[index]['name'];
                                 _taskDescriptionEditingController.text =
                                     _tasks[index]['description'];
-                                _createTask(context);
+                                _createEditTask(context);
                               });
                             },
                           ),
@@ -223,7 +223,7 @@ class _TaskIndexScreenState extends State<TaskIndexScreen> {
     );
   }
 
-  void _createTask(BuildContext context) {
+  void _createEditTask(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) {
