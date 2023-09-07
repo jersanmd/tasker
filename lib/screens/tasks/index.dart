@@ -97,17 +97,50 @@ class _TaskIndexScreenState extends State<TaskIndexScreen> {
     }
   }
 
-  Future<void> _updateTask(int key, Map<String, dynamic> task) async {
-    await _taskerBox.put(key, task);
-    _refreshTaskApi();
+  // Future<void> _updateTask(int key, Map<String, dynamic> task) async {
+  //   await _taskerBox.put(key, task);
+  //   _refreshTaskApi();
 
-    _taskNameEditingController.text = "";
-    _taskDescriptionEditingController.text = "";
+  //   _taskNameEditingController.text = "";
+  //   _taskDescriptionEditingController.text = "";
+  // }
+
+  Future<void> _updateTaskApi(int index, dynamic task) async {
+    var response = await http.patch(
+      Uri.parse(
+          'http://192.168.99.213:8000/api/tasks/update/${_tasks[index]['id']}'),
+      headers: {'Content-type': 'application/x-www-form-urlencoded'},
+      body: task,
+    );
+
+    switch (response.statusCode) {
+      case 200:
+        var body = json.decode(response.body);
+
+        setState(() {
+          message = body['message'];
+        });
+
+        _refreshTaskApi();
+        break;
+    }
   }
 
-  Future<void> _deleteTask(int key) async {
-    await _taskerBox.delete(key);
-    _refreshTaskApi();
+  Future<void> _deleteTaskApi(int index) async {
+    var response = await http.delete(Uri.parse(
+        'http://192.168.99.213:8000/api/tasks/destroy/${_tasks[index]['id']}'));
+
+    switch (response.statusCode) {
+      case 200:
+        var body = json.decode(response.body);
+
+        setState(() {
+          message = body['message'];
+        });
+
+        _refreshTaskApi();
+        break;
+    }
   }
 
   @override
@@ -164,17 +197,14 @@ class _TaskIndexScreenState extends State<TaskIndexScreen> {
                           SlidableAction(
                             icon: BootstrapIcons.trash_fill,
                             foregroundColor: AppConstants.primaryColor,
-                            onPressed: (context) {
-                              _deleteTask(_tasks[index]['key']);
-                              StatusAlert.show(
-                                context,
-                                duration: const Duration(seconds: 1),
-                                title: 'Task',
-                                subtitle: 'Task deleted.',
-                                configuration: const IconConfiguration(
-                                    icon: BootstrapIcons.trash_fill),
-                                maxWidth: 260,
-                              );
+                            onPressed: (context) async {
+                              await _deleteTaskApi(index).whenComplete(() {
+                                _showStatus('Task', 'Task deleted.',
+                                    BootstrapIcons.trash_fill);
+                              }).onError((error, stackTrace) {
+                                _showStatus('Failed', 'Task failed to delete.',
+                                    BootstrapIcons.trash_fill);
+                              });
                             },
                           )
                         ],
@@ -242,20 +272,15 @@ class _TaskIndexScreenState extends State<TaskIndexScreen> {
 
                       if (isValid) {
                         if (isEdit) {
-                          _updateTask(_tasks[editIndex]['key'], {
+                          await _updateTaskApi(editIndex, {
                             'name': _taskNameEditingController.text.trim(),
                             'description':
                                 _taskDescriptionEditingController.text.trim()
+                          }).whenComplete(() {
+                            _showStatus(
+                                'Task', 'Task updated.', BootstrapIcons.pencil);
+                            Navigator.pop(context);
                           });
-                          StatusAlert.show(
-                            context,
-                            duration: const Duration(seconds: 1),
-                            title: 'Task',
-                            subtitle: 'Task updated.',
-                            configuration: const IconConfiguration(
-                                icon: BootstrapIcons.pencil),
-                            maxWidth: 260,
-                          );
                         } else {
                           await _storeTaskApi({
                             'name': _taskNameEditingController.text.trim(),
