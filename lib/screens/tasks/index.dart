@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -9,6 +11,7 @@ import 'package:tasker/constants/app.dart';
 import 'package:tasker/widgets/app_bar.dart';
 import 'package:tasker/widgets/elevated_button.dart';
 import 'package:tasker/widgets/text_field.dart';
+import 'package:http/http.dart' as http;
 
 class TaskIndexScreen extends StatefulWidget {
   const TaskIndexScreen({super.key});
@@ -27,36 +30,76 @@ class _TaskIndexScreenState extends State<TaskIndexScreen> {
   bool isEdit = false;
   int editIndex = 0;
 
-  List<Map<String, dynamic>> _tasks = [];
+  // List<Map<String, dynamic>> _tasks = [];
   final Box<dynamic> _taskerBox = Hive.box("tasker_database");
 
-  void _refreshTasks() {
-    final task = _taskerBox.keys.map((key) {
-      final task = _taskerBox.get(key);
+  String message = "";
+  List<dynamic> _tasks = [];
 
-      return {
-        'key': key,
-        'name': task['name'],
-        'description': task['description']
-      };
-    }).toList();
+  // void _refreshTasks() {
+  //   final task = _taskerBox.keys.map((key) {
+  //     final task = _taskerBox.get(key);
 
-    setState(() {
-      _tasks = task.reversed.toList();
-    });
+  //     return {
+  //       'key': key,
+  //       'name': task['name'],
+  //       'description': task['description']
+  //     };
+  //   }).toList();
+
+  //   setState(() {
+  //     _tasks = task.reversed.toList();
+  //   });
+  // }
+
+  Future<void> _refreshTaskApi() async {
+    var response = await http.get(
+      Uri.parse('http://192.168.99.213:8000/api/tasks'),
+    );
+
+    switch (response.statusCode) {
+      case 200:
+        var body = json.decode(response.body);
+
+        setState(() {
+          _tasks = body['tasks'];
+        });
+
+        break;
+    }
   }
 
-  Future<void> _storeTask(Map<String, dynamic> task) async {
-    await _taskerBox.add(task);
-    _refreshTasks();
+  // Future<void> _storeTask(Map<String, dynamic> task) async {
+  //   await _taskerBox.add(task);
+  //   _refreshTasks();
 
-    _taskNameEditingController.text = "";
-    _taskDescriptionEditingController.text = "";
+  //   _taskNameEditingController.text = "";
+  //   _taskDescriptionEditingController.text = "";
+  // }
+
+  Future<void> _storeTaskApi(dynamic task) async {
+    var response = await http.post(
+      Uri.parse('http://192.168.99.213:8000/api/tasks/store'),
+      headers: {'Content-type': 'application/x-www-form-urlencoded'},
+      body: task,
+    );
+
+    switch (response.statusCode) {
+      case 200:
+        var body = json.decode(response.body);
+
+        setState(() {
+          message = body['message'];
+        });
+
+        _refreshTaskApi();
+        break;
+    }
   }
 
   Future<void> _updateTask(int key, Map<String, dynamic> task) async {
     await _taskerBox.put(key, task);
-    _refreshTasks();
+    _refreshTaskApi();
 
     _taskNameEditingController.text = "";
     _taskDescriptionEditingController.text = "";
@@ -64,13 +107,13 @@ class _TaskIndexScreenState extends State<TaskIndexScreen> {
 
   Future<void> _deleteTask(int key) async {
     await _taskerBox.delete(key);
-    _refreshTasks();
+    _refreshTaskApi();
   }
 
   @override
   void initState() {
     super.initState();
-    _refreshTasks();
+    _refreshTaskApi();
   }
 
   @override
@@ -152,99 +195,101 @@ class _TaskIndexScreenState extends State<TaskIndexScreen> {
 
   void _createTask(BuildContext context) {
     showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text(isEdit ? "Edit Task" : 'Create task'),
-            content: SingleChildScrollView(
-              child: FormBuilder(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    TextFieldWidget(
-                      name: 'name',
-                      labelText: "Name",
-                      isObscure: false,
-                      textInputType: TextInputType.text,
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      textInputAction: TextInputAction.next,
-                      validator: FormBuilderValidators.compose([
-                        FormBuilderValidators.required(),
-                      ]),
-                      controller: _taskNameEditingController,
-                    ),
-                    const SizedBox(height: AppConstants.textFieldPadding),
-                    TextFieldWidget(
-                      name: 'description',
-                      labelText: "Description",
-                      isObscure: false,
-                      textInputType: TextInputType.text,
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      textInputAction: TextInputAction.done,
-                      maxLines: 4,
-                      validator: FormBuilderValidators.compose([
-                        FormBuilderValidators.required(),
-                      ]),
-                      controller: _taskDescriptionEditingController,
-                    ),
-                    const SizedBox(height: AppConstants.textFieldPadding),
-                    ElevatedButtonWidget(
-                      label: isEdit ? "Update" : "Create",
-                      buttonColor: AppConstants.primaryColor,
-                      buttonTextColor: AppConstants.backgroundColor,
-                      icon:
-                          isEdit ? BootstrapIcons.pencil : BootstrapIcons.plus,
-                      onPressed: () {
-                        bool isValid =
-                            _formKey.currentState?.validate() ?? false;
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(isEdit ? "Edit Task" : 'Create task'),
+          content: SingleChildScrollView(
+            child: FormBuilder(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextFieldWidget(
+                    name: 'name',
+                    labelText: "Name",
+                    isObscure: false,
+                    textInputType: TextInputType.text,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    textInputAction: TextInputAction.next,
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(),
+                    ]),
+                    controller: _taskNameEditingController,
+                  ),
+                  const SizedBox(height: AppConstants.textFieldPadding),
+                  TextFieldWidget(
+                    name: 'description',
+                    labelText: "Description",
+                    isObscure: false,
+                    textInputType: TextInputType.text,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    textInputAction: TextInputAction.done,
+                    maxLines: 4,
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(),
+                    ]),
+                    controller: _taskDescriptionEditingController,
+                  ),
+                  const SizedBox(height: AppConstants.textFieldPadding),
+                  ElevatedButtonWidget(
+                    label: isEdit ? "Update" : "Create",
+                    buttonColor: AppConstants.primaryColor,
+                    buttonTextColor: AppConstants.backgroundColor,
+                    icon: isEdit ? BootstrapIcons.pencil : BootstrapIcons.plus,
+                    onPressed: () async {
+                      bool isValid = _formKey.currentState?.validate() ?? false;
 
-                        if (isValid) {
-                          setState(() {
-                            if (isEdit) {
-                              _updateTask(_tasks[editIndex]['key'], {
-                                'name': _taskNameEditingController.text.trim(),
-                                'description': _taskDescriptionEditingController
-                                    .text
-                                    .trim()
-                              });
-                              StatusAlert.show(
-                                context,
-                                duration: const Duration(seconds: 1),
-                                title: 'Task',
-                                subtitle: 'Task updated.',
-                                configuration: const IconConfiguration(
-                                    icon: BootstrapIcons.pencil),
-                                maxWidth: 260,
-                              );
-                            } else {
-                              _storeTask({
-                                'name': _taskNameEditingController.text.trim(),
-                                'description': _taskDescriptionEditingController
-                                    .text
-                                    .trim()
-                              });
-                              StatusAlert.show(
-                                context,
-                                duration: const Duration(seconds: 1),
-                                title: 'Task',
-                                subtitle: 'New task created.',
-                                configuration: const IconConfiguration(
-                                    icon: BootstrapIcons.check),
-                                maxWidth: 260,
-                              );
-                            }
+                      if (isValid) {
+                        if (isEdit) {
+                          _updateTask(_tasks[editIndex]['key'], {
+                            'name': _taskNameEditingController.text.trim(),
+                            'description':
+                                _taskDescriptionEditingController.text.trim()
                           });
-
-                          Navigator.pop(context);
+                          StatusAlert.show(
+                            context,
+                            duration: const Duration(seconds: 1),
+                            title: 'Task',
+                            subtitle: 'Task updated.',
+                            configuration: const IconConfiguration(
+                                icon: BootstrapIcons.pencil),
+                            maxWidth: 260,
+                          );
+                        } else {
+                          await _storeTaskApi({
+                            'name': _taskNameEditingController.text.trim(),
+                            'description':
+                                _taskDescriptionEditingController.text.trim()
+                          }).whenComplete(() {
+                            Navigator.pop(context);
+                            _showStatus('Task', "Task successfully created.",
+                                BootstrapIcons.check);
+                          }).onError((error, stackTrace) {
+                            _showStatus("Task", "Task creation failed.",
+                                BootstrapIcons.stop);
+                          });
                         }
-                      },
-                    ),
-                  ],
-                ),
+                      }
+                    },
+                  ),
+                ],
               ),
             ),
-          );
-        });
+          ),
+        );
+      },
+    );
+  }
+
+  void _showStatus(String title, String subtitle, IconData icon) {
+    return StatusAlert.show(
+      context,
+      duration: const Duration(seconds: 1),
+      title: title,
+      subtitle: subtitle,
+      configuration: IconConfiguration(icon: icon),
+      maxWidth: 350,
+    );
   }
 }
